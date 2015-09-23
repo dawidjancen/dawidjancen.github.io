@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Invoice App Technologies</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Invoice App</h1>
+					<h3>Technologies used</h3>
+					<p>
+						<small>Dawid Jancen / <a href="mailto:dawid.jancen@sidnet.info">dawid.jancen@sidnet.info</a></small>
+					</p>
+				</section>
+
+				<section>
+					<h2>Invoice App</h2>
+					<p>
+						We've been tasked with creating a simple, one-page invoice management application. The idea was to provide list functionality for both contractors and invoices, while also providing the ability to overview, edit, and view history of changes for single entries.
+					</p>
+				</section>
+
+                <section>
+                    <h2>Outline</h2>
+                    <p>
+                        These are the technologies we've found to be best suited for the task.
+                    </p>
+                    <ul>
+                        <li>ES6</li>
+                        <li>Babel, Webpack, Gulp</li>
+                        <li>NPM, Bower</li>
+                        <li>React</li>
+                        <li>Flux (Alt)</li>
+                        <li>lodash, moment, react-router, react-bootstrap, whatwg-fetch</li>
+                        <li>Browser Sync</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>ES6</h2>
+                </section>
+
+                <section>
+                    <p>
+                        First technology that we decided to use in our little project is ES6. With ES7 being a work in progress we decided it's time to move ahead and give the new standard a chance, with all it's new features and changes.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Some of the new features</h2>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Arrow functions
+
+                        Shorter syntax and lexical "this" binding.
+
+                        ```
+                        this.nums.forEach(v => {
+                           if (v % 5 === 0)
+                               this.fives.push(v)
+                        })
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Classes
+
+                        More intuitive, object-oriented programming-style aproach.
+
+                        ```
+                        class Square {
+                            constructor (x, y) {
+                                this._x = x;
+                                this._y = y;
+                            }
+                            calculateArea () {
+                                this._area = this._x * this._y;
+                            }
+                        }
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    "Super" method gives us an easy access to base class constructor and methods.
+
+                    ```
+                    class BigSquare extends Square {
+                        constructor (x, y) {
+                            super(x, y);
+                        }
+                        doubleArea () {
+                            super.calculateArea();
+                            this._area *= 2;
+                        }
+                    }
+
+                    ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Modules
+                        ES6 gives us the ability to import/export symbols without global namespace polution.
+
+                        ```
+                        // dir/test.js
+                        export function test () { return "test"; }
+                        export var x = 15
+
+                        // firstApp.js
+                        import * as test from "dir/test"
+                        console.log(test.test() + test.x); // => test15
+
+                        // secondApp.js
+                        import { x } from "dir/test"
+                        console.log(x) // => 15
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Destructuring
+                        With ES6 we're getting some nice simplification for object/array props matching.
+
+                        ```
+                        let array = [1, 2, 3, 4];
+                        let [a, , , b] = array;
+                        // a => 1, b => 4
+
+                        let object = { a: 1, b: 2, c:3 };
+                        let { first: a, last: c } = object;
+                        // first => 1, last => 3
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        We're also allowed to use destructuring in functions' arguments, and change variable names (aliasing).
+
+                        ```
+                        function example ({ firstName: f, lastName: l }) {
+                            console.log(f + " " + l);
+                        }
+
+                        example({ firstName: "Vito", lastName: "Corleone"});
+                        // => Vito Corleone
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ## Spread operator
+
+                        ```
+                        function example (others) {
+                            return [1, 2, 3, ...others];
+                        }
+
+                        example([4, 5, 6]);
+                        // => [1, 2, 3, 4, 5, 6]
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Spread operator can be also helpful to spread arguments or for destructuring.
+
+                        ```
+                        class Example extends BaseClass {
+                            constructor (...args) {
+                                super(...args);
+                            }
+                        }
+
+                        let array = [1, 2, 3, 4, 5];
+                        let [1, 2, ...others] = array;
+                        others; // => [3, 4, 5]
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Babel</h2>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        The issue with using ES6 right now is the lack of full support in all modern browsers. Babel is a Javascript transpiler, that converts Javascript code written in ES6 standard to equivalent code that uses only ES5 compatible features.
+
+                        ```
+                        // ES6
+                        let array = [1, 2, 3];
+                        let test = array.map(a => a * 2);
+
+                        // ES5 equivalent
+                        var array = [1, 2, 3];
+                        var test = array.map(function (a) {
+                            return a * 2;
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Supported ES features</h2>
+                    <p>
+                        Babel supports all ES6 features mentioned before and a lot more out-of-the-box. The great thing about Babel is the fact that it won't become obsolete when modern browsers start fully supporting ES6. Babel's goal is to be a transpiler for all future versions of JavaScript.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Webpack</h2>
+                    <p>
+                        Webpack is a module bundler. It takes modules with dependencies and generates static assets representing those modules.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Webpack depends on the "webpack.config.js" file for configuration.
+
+                        ```
+                        module.exports = {
+                            // Applications entry file
+                            entry: "./app.js",
+                            // Destination for the bundle.js file, to be used instead of all the plugins
+                            output: {
+                                path: __dirname,
+                                filename: "bundle.js"
+                            },
+                            // Loaders for file types other than .js
+                            module: {
+                                loaders: [
+                                    { test: /\.css$/, loader: "style!css" }
+                                ]
+                            }
+                        };
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Gulp</h2>
+                </section>
+
+                <section>
+                    <p>
+                        Gulp is a javascript task runner, fitted with tools to create different tasks. In case of our application it's also the glue that binds Webpack, Babel, and other modules together.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Gulp installation
+
+                        ```
+                        // First install gulp globaly
+                        npm install -g gulp
+
+                        // Then install gulp as a devDependency (package.json)
+                        npm install --save-dev gulp
+
+                        // You can also install all gulp extensions in the same way
+                        npm install --save-dev gulp-util
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        By default gulp depends on file "gulpfile.js", in which we can define all our tasks.
+
+                        ```
+                        // Get the gulp  and other modules
+                        var gulp = require('gulp');
+                        var concat = require("gulp-concat");
+                        var uglify = require("gulp-uglify");
+
+                        // Example task
+                        gulp.task('scripts', function () {
+                            return gulp.src("src/*.js")
+                                .pipe(concat("example.js"))
+                                .pipe(uglify())
+                                .pipe(gulp.dest("dir"));
+                        });
+                        // When calling "gulp scripts" we take all .js files from "src" folder,
+                        // concatenate and then uglify them, creating the "example.js"
+                        // file in "dir" directory at the end.
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <p>More gulp info...<p>
+                </section>
+
+                <section>
+                    <h2>Node Package Manager</h2>
+                    <p>One of the most popular package managers, with a huge module registry, also a great way to share, download and update reusable code.
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Can be installed both locally ...
+
+                        ```
+                        // Use Node's "require" method to use the module in code
+                        var lodash = require("lodash");
+
+                        var output = lodash.forEach([1, 2, 3], function (i) {
+                            console.log(i);
+                        }
+
+                        // => 1
+                        // => 2
+                        // => 3
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        ... or globally.
+
+                        ```
+                        npm install -g jshint
+
+                        // Globally installed modules can be used eg. as command line tools
+                        jshint example.js
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    One of the reasons we used NPM is the ease of keeping track of module updates. NPM tracks all module versions in the package.json file created in the app directory on local plugin installation.
+
+                    ```
+                    // Example package.json file
+                    {
+                        "name": "example",
+                        "version": "0.1.0",
+                        "description": "",
+                        "scripts": {},
+                        "repository": {
+                            "type": "git",
+                            "url": "ssh://example@gitlab.example.com:19000/example/example.git"
+                        },
+                        "devDependencies": {
+                            "bower": "^1.4.1",
+                            "gulp": "^3.9.0",
+                            "less": "~2.5.1",
+                            "webpack": "~1.9.11"
+                        },
+                        "dependencies": {
+                            "bootstrap": "^3.3.5",
+                            "lodash": "^3.9.3",
+                            "moment": "~2.10.3",
+                            "react": "~0.13.3"
+                        }
+                    }
+
+                    ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    We can update only specific modules in the app, or all at once.
+
+                    ```
+                    // Update a specific module
+                    npm update lodash
+
+                    // Update all modules specified in the package.json file
+                    npm update
+
+                    // Depending on symbols prefixing the module version we can control what level of update we desire
+                    // ^ prefix or version 2.x allows both minor and patch updates to be downloaded
+                    // ~ prefix or 3.3.x allows only patch udates
+                    "dependencies": {
+                        "bootstrap": "3.3.x",
+                        "lodash": "^3.9.3",
+                        "moment": "2.x.3",
+                        "react": "~0.13.3"
+                    }
+
+                    ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Bower</h2>
+                    <p>
+                        Another package manager used in our little project. Very similar to NPM, but more front-end focused. Bower's registry contains both modules that can be found on NPM's registry, and a lot of other ones, which is the reason why we use it in the invoice app.
+                    </p>
+                </section>
+
+                <section>
+                    <p>
+                        Bower depends on the bower.json file, which is very similar to NPM's package.json, and can be used alongside without conflicts. Module updating also works the same way as it does in NPM.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>React</h2>
+                    <p>
+                        A powerful library for building user interfaces.
+                    </p>
+                </section>
+
+                <section>
+                    <p>
+                        React focuses only on the UI, making no assumptions on the rest of the application. Can be viewed as a "V" in a "MVC" model. It is all about building reusable components, which makes the code easy to reuse, test, and separates the concerns.
+                    </p>
+                    <p>
+                        It also implements a one-directional reactive data flow that reduces the boilerplate and is easier to reason about.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        JSX Syntax - optional aproach to templates, allowing us to create JavaScript objects using HTML syntax. We've found this to be easier and a lot cleaner than working with templates in case of our app.
+
+                        ```
+                        // Instead of
+                        React.createElement('a', {href: 'https://facebook.github.io/react/'}, 'Hello!')
+                        // We can use
+                        <a href="https://facebook.github.io/react/">Hello!</a>
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    React takes a component aproach, with single components implementing a render() method that takes input data and returns what to display.
+
+                    ```
+                    var HelloMessage = React.createClass({
+                        render: function () {
+                            return <div>Hello {this.props.name}</div>;
+                        }
+                    });
+                    React.render(<HelloMessage name="John" />, mountNode);
+
+                    ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    In addition to taking input data, a component can maintain it's internal state. When state data changes components markup will get updated by re-invoking the render () method with new data.
+
+                    ```
+                    var Timer = React.createClass({
+                        getInitialState: function () {
+                            return {secondsElapsed: 0};
+                        },
+                        tick: function () {
+                            this.setState({secondsElapsed: this.state.secondsElapsed + 1});
+                        },
+                        componentDidMount: function () {
+                            this.interval = setInterval(this.tick, 1000);
+                        },
+                        componentWillUnmount: function () {
+                            clearInterval(this.interval);
+                        },
+                        render: function () {
+                            return (
+                                <div>Seconds Elapsed: {this.state.secondsElapsed}</div>
+                            );
+                        }
+                    });
+                    React.render(<Timer />, mountNode);
+
+                    ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Flux (Alt)</h2>
+                </section>
+
+                <section>
+                    <h2>Helper modules & libraries</h2>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Lodash
+                    Similar to underscore.js - a very popular functional programming JavaScript library with a bunch of utilities.
+
+                    ```
+                    let ts = [
+                        { size: "S", color: "blue"},
+                        { size: "S", color: "black"},
+                        { size: "M", color: "red"},
+                        { size: "L", color: "blue"},
+                        { size: "L", color: "black"},
+                        { size: "XL", color: "black"}
+                    ];
+                    let result = _(ts).last(3).pluck("color").sortBy("color").value();
+
+                    ```
+                    </script>
+                </section>
+
+                <section>
+                    <p>
+                        Why Lodash over Underscore?
+                    <p>
+                    <ul>
+                        <li>more consistent cross-environment iteration support for arrays, strings, objects, and arguments,</li>
+                        <li>more features (like AMD support, deep clone, and deep merge), more thorough documentation and unit tests,</li>
+                        <li>better overall performance and optimizations for large arrays/object iteration,</li>
+                        <li>updated more frequently than Underscore.</li>
+                    </ul>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    ## Moment
+                    Moment is an awesome JavaScript library for validating, parsing, and manipulating dates and times. It has no dependencies, it's very simple to use, yet extremely extensive, providing support for multiple locales.
+
+                    ```
+                    let moment = require("moment.js");
+
+                    moment().format('MMMM Do YYYY, h:mm:ss a');
+                    // => September 22nd 2015, 6:14:01 pm
+                    moment("20111031", "YYYYMMDD").fromNow();
+                    // => 4 years ago
+                    moment().subtract(3, 'days').calendar();
+                    // => Last Saturday at 18:15
+
+                    ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>React Router</h2>
+                    <p>React Router is a powerful routing library built on top of React that helps you add new screens and flows to your application, all while keeping the URL in sync with what's being displayed on the page. It has a simple API with features like lazy code loading, dynamic route matching, and location transition handling built right in.</p>
+                </section>
+
+                <section>
+                    <h2>React Bootstrap</h2>
+                    <p>React Bootstrap is a library of reuseable front-end components. It has the look-and-feel of Twitter Bootstrap, but with much cleaner code, via React.js framework.</p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        React bootstrap can be a lot cleaner than Twitter bootstrap.
+
+                        ```
+                        // Twitter bootstrap
+                        <button id="something-btn" type="button" class="btn btn-success btn-sm">
+                            Button
+                        </button>
+                        // Some Javascript to fire the callback
+                        $('#something-btn').click(someCallback);
+
+                        // React bootstrap
+                        <Button bsStyle="success" bsSize="small" onClick={someCallback}>
+                            Button
+                        </Button>
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                    Reacts' solution for repetitive code is to write directly in Javascript.
+
+                    ```
+                    // Bootstrap solution
+                    var button = React.DOM.button({
+                        className: "btn btn-lg btn-success",
+                        children: "Register"
+                    });
+                    React.render(button, mountNode);
+
+                    // React bootstrap (in JS we can wrap the HTML/CSS and provide a cleaner solution)
+                    var button = ReactBootstrap.Button({
+                        bsStyle: "success",
+                        bsSize: "large",
+                        children: "Register"
+                    });
+                    React.render(button, mountNode);
+
+                    ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>whatwg-fetch</h2>
+                    <p>
+                        This module provides a global fetch function as an easier way to make web requests and handle responses than using an XMLHttpRequest.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        The fetch function supports any HTTP method.
+
+                        ```
+                        // Get HTML
+                        fetch('/users.html')
+                            .then(function(response) {
+                                return response.text()
+                            });
+
+                        // Post JSON
+                        fetch("/users", {
+                            method: "post",
+                            headers: {
+                                "Accept": "application/json",
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(objectWithData);
+
+                        ```
+                    </script>
+                </section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
