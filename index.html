@@ -92,10 +92,9 @@
                         Shorter syntax and lexical "this" binding.
 
                         ```
-                        this.nums.forEach(v => {
-                           if (v % 5 === 0)
-                               this.fives.push(v)
-                        })
+                        let ids = _.map(this.props.items, (item) => {
+                            return item.id;
+                        });
 
                         ```
                     </script>
@@ -108,36 +107,26 @@
                         More intuitive, object-oriented programming-style aproach.
 
                         ```
-                        class Square {
-                            constructor (x, y) {
-                                this._x = x;
-                                this._y = y;
+                        class Section extends React.Component {
+                            constructor(props, ...rest) {
+                                super(...arguments);
+
+                                this.state = {
+                                    contractor: undefined
+                                };
+
+                                this.onStoreChange = this.onStoreChange.bind(this);
                             }
-                            calculateArea () {
-                                this._area = this._x * this._y;
+
+                            componentDidMount() {
+                                ItemStore.listen(this.onStoreChange);
+
+                                ItemActions.fetch(this.props.params.id);
                             }
+                            ...
                         }
 
                         ```
-                    </script>
-                </section>
-
-                <section data-markdown>
-                    <script type="text/template">
-                    "Super" method gives us an easy access to base class constructor and methods.
-
-                    ```
-                    class BigSquare extends Square {
-                        constructor (x, y) {
-                            super(x, y);
-                        }
-                        doubleArea () {
-                            super.calculateArea();
-                            this._area *= 2;
-                        }
-                    }
-
-                    ```
                     </script>
                 </section>
 
@@ -147,17 +136,24 @@
                         ES6 gives us the ability to import/export symbols without global namespace polution.
 
                         ```
-                        // dir/test.js
-                        export function test () { return "test"; }
-                        export var x = 15
+                        import React from "react";
+                        import { Section as CommonSection } from "components/Common";
+                        import Content from "./Content/Content";
 
-                        // firstApp.js
-                        import * as test from "dir/test"
-                        console.log(test.test() + test.x); // => test15
+                        class Section extends React.Component {
+                            render() {
+                                return (
+                                    <CommonSection
+                                        sectionProps={{className: "contractor-create"}}
+                                        header="Create new Contractor"
+                                    >
+                                        <Content {...this.props} />
+                                    </CommonSection>
+                                );
+                            }
+                        };
 
-                        // secondApp.js
-                        import { x } from "dir/test"
-                        console.log(x) // => 15
+                        export default Section;
 
                         ```
                     </script>
@@ -169,29 +165,23 @@
                         With ES6 we're getting some nice simplification for object/array props matching.
 
                         ```
-                        let array = [1, 2, 3, 4];
-                        let [a, , , b] = array;
-                        // a => 1, b => 4
+                        let {
+                            checked,
+                            disabled,
+                            defaultChecked,
+                            onChange,
+                            className,
+                            ...restProps
+                        } = this.props;
 
-                        let object = { a: 1, b: 2, c:3 };
-                        let { first: a, last: c } = object;
-                        // first => 1, last => 3
-
-                        ```
-                    </script>
-                </section>
-
-                <section data-markdown>
-                    <script type="text/template">
-                        We're also allowed to use destructuring in functions' arguments, and change variable names (aliasing).
-
-                        ```
-                        function example ({ firstName: f, lastName: l }) {
-                            console.log(f + " " + l);
-                        }
-
-                        example({ firstName: "Vito", lastName: "Corleone"});
-                        // => Vito Corleone
+                        return (
+                            <div
+                                className={classNames("checkbox component-common-checkbox", this.props.className)}
+                                {...restProps}
+                            >
+                                ...
+                            </div>
+                        );
 
                         ```
                     </script>
@@ -202,31 +192,23 @@
                         ## Spread operator
 
                         ```
-                        function example (others) {
-                            return [1, 2, 3, ...others];
-                        }
+                        _(items).map((item) => {
+                            return { ...item, date_issued: moment(item.date_issued) };
+                        });
 
-                        example([4, 5, 6]);
-                        // => [1, 2, 3, 4, 5, 6]
+                        // Spreading properties
+                        let checkboxProps = {
+                            checked,
+                            disabled,
+                            defaultChecked,
+                            onChange
+                        };
 
-                        ```
-                    </script>
-                </section>
-
-                <section data-markdown>
-                    <script type="text/template">
-                        Spread operator can be also helpful to spread arguments or for destructuring.
-
-                        ```
-                        class Example extends BaseClass {
-                            constructor (...args) {
-                                super(...args);
-                            }
-                        }
-
-                        let array = [1, 2, 3, 4, 5];
-                        let [1, 2, ...others] = array;
-                        others; // => [3, 4, 5]
+                        return (
+                            ...
+                                <input ref="checkbox" type="checkbox" {...checkboxProps} />
+                            ...
+                        )
 
                         ```
                     </script>
@@ -294,6 +276,47 @@
                     </script>
                 </section>
 
+                <section data-markdown>
+                    <script type="text/template">
+                        Resolve option allows us to change how we search for modules. The module is looked up in each module directory and resolved. We find the main file in a directory to get the absolute path, try to append all extensions to it, and use the first existing file as a result.
+
+                        ```
+                        // Resolve is one of Webpacks' options
+                        resolve: {
+                            extensions: ["", ".webpack.js", ".web.js", ".js", ".jsx"],
+                            modulesDirectories: [
+                                "web_modules",
+                                "node_modules",
+                                "bower_components",
+                                "src"
+                            ]
+                        }
+                        // This allows us to use shorter module paths eg.
+                        import ItemStore from "stores/Invoice/Item";
+                        // instead of
+                        import ItemStore from "../../../../../../stores/Invoice/Item";
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Webpack also gives us the option to use things like source mapping, or various optimization plugins. The other great thing about Webpacks config file is that it's written in Javascript, giving us the option to use eg. loops, or if statements.
+
+                        ```
+                        // Webpacks native "devtool" option using an "if" statement
+                        devtool: DEBUG ? "source-map" : false
+
+                        // Uglify plugin initialized in Webpacks "plugin" option
+                        plugins: [
+                            new webpack.optimize.UglifyJsPlugin({options});
+                        ]
+
+                        ```
+                    </script>
+                </section>
+
                 <section>
                     <h2>Gulp</h2>
                 </section>
@@ -347,8 +370,82 @@
                     </script>
                 </section>
 
+                <section data-markdown>
+                    <script type="text/template">
+                        Linting (jshint)
+
+                        ```
+                        var jshint = require("gulp-jshint");
+
+                        gulp.task("lint", function() {
+                            gulp.src("./src/*.js")
+                                .pipe(jshint())
+                                .pipe(jshint.reporter("default"));
+                        });
+                        // Now we can run jshint by typing "gulp lint" in the console
+                        // We can also asign the "lint" task to be run when running "gulp"
+                        gulp.task("default", ["lint"]);
+
+                        // There's also a way to run jshint on file change,
+                        // thanks to the "watch" function
+                        gulp.task('watch', function() {
+                            gulp.watch("src/*.js", ["lint"]);
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/templates">
+                        Script compilation (babel)
+
+                        ```
+                        var babel = require('gulp-babel');
+
+                        gulp.task('default', function () {
+                            return gulp.src('src/app.js')
+                                .pipe(babel())
+                                .pipe(gulp.dest('dist'));
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Bundling (webpack)
+
+                        ```
+                        var gutil = require("gulp-util");
+                        var webpack = require("webpack");
+
+                        gulp.task("webpack", function(callback) {
+                            webpack({
+                                // Config
+                            }, function(err, stats) {
+                                if(err) throw new gutil.PluginError("webpack", err);
+
+                                gutil.log("[webpack]", stats.toString({
+                                    // Output options (console)
+                                }));
+
+                                callback();
+                            });
+                        });
+
+                        ```
+                    </script>
+                </section>
+
                 <section>
-                    <p>More gulp info...<p>
+                    <p>
+                        We can also run a lot of other tasks, like automated testing, deploying to server etc.
+                    </p>
+                    <p>
+                        It's also worth mentioning that Gulps' config file is written in Javascript which allows us to dynamically run it when necessary.
+                    </p>
                 </section>
 
                 <section>
@@ -358,10 +455,10 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        Can be installed both locally ...
+                        Modules can be used in code.
 
                         ```
-                        // Use Node's "require" method to use the module in code
+                        // Use Node's "require" method to gain access to the module in code
                         var lodash = require("lodash");
 
                         var output = lodash.forEach([1, 2, 3], function (i) {
@@ -378,7 +475,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        ... or globally.
+                        Packages can also be standalone programs/script, run through the console.
 
                         ```
                         npm install -g jshint
@@ -425,7 +522,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                    We can update only specific modules in the app, or all at once.
+                    We can update only specific modules in the app, or all at once. NPM is using the "Semver" versioning system.
 
                     ```
                     // Update a specific module
@@ -538,6 +635,229 @@
                 </section>
 
                 <section>
+                    <h2>Virtual DOM</h2>
+                    <p>React does not manipulate the DOM unless it needs to. It uses a fast, internal mock DOM to perform diffs and computes the most efficient DOM mutation.</p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Even when calling the "render" method every 500ms, the only thing that will get changed is the time displayer. Name entered in the input will not get changed unless done manually.
+
+                        ```
+                        var HelloWorld = React.createClass({
+                            render: function() {
+                                return (
+                                    <p>
+                                        Hello, <input type="text" placeholder="Your name here" />!
+                                        It is {this.props.date.toTimeString()}
+                                    </p>
+                                );
+                            }
+                        });
+
+                        setInterval(function() {
+                            React.render(
+                                <HelloWorld date={new Date()} />,
+                                document.getElementById('example')
+                            );
+                        }, 500);
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Performance</h2>
+                    <p>
+                        Thanks to previously mentioned reactive updates aproach with the use of a Virtual DOM React is quite fast out of the box.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        If performance is a bottleneck, especially with dozens or hundreds of components, we can use "shouldComponentUpdate" method to speed up our app. It allows us to add optimization hints to React's diff algorithm, for specific components. If it returns false, then render() will be completely skipped until the next state change.
+
+                        ```
+                        shouldComponentUpdate: function(nextProps, nextState) {
+                            return nextProps.id !== this.props.id;
+                        }
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Reusable components</h2>
+                    <p>
+                        Because React is component based it's a great idea to break down the common design elements (buttons, form fields, layout components) into reusable components with well-defined interface. We can then reuse them in future projects, saving some time in the process.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Prop Validation - React allows us to use "propTypes" to ensure that our components are used correctly. React.PropTypes exports a range of validators that can be used to make sure the data we receive is valid. For performance reasons it's only checked in development mode.
+
+                        ```
+                        var Box2 = React.createClass({
+                            propTypes: {
+                               title: React.PropTypes.string.isRequired,
+                               text: React.PropTypes.string.isRequired,
+                               show: React.PropTypes.bool.isRequired
+                               // And many more
+                            }
+
+                            ...
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Default props - we can use the "getDefaultProps" method to ensure that this.props.value has a value if not specified by a parent component.
+
+                        ```
+                        var ComponentWithDefaultProps = React.createClass({
+                            getDefaultProps: function() {
+                                return {
+                                    value: 'default value'
+                                };
+                            }
+
+                            ...
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>React differences between ES5 and ES6</h2>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Default props and propTypes
+
+                        ```
+                        // ES5
+                        var ExampleComponent = React.createClass({
+                            propTypes: {
+                                aStringProp: React.PropTypes.string
+                            },
+                            getDefaultProps: function() {
+                                return { aStringProp: '' };
+                            }
+                        });
+
+                        // ES6
+                        var ExampleComponent = React.createClass({ ... });
+                        // No props init in ES6 so we need to initialize all class properties
+                        // outside of the scope of the class
+                        ExampleComponent.propTypes = {
+                            aStringProp: React.PropTypes.string
+                        };
+                        ExampleComponent.defaultProps = {
+                            aStringProp: ''
+                        };
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Classes
+
+                        ```
+                        // ES5
+                        var ExampleComponent = React.createClass({
+                            render: function() {
+                                return <div onClick={this._handleClick}>Hello, world.</div>;
+                            },
+                            _handleClick: function() {
+                                console.log(this);
+                            }
+                        });
+
+                        // ES6
+                        class ExampleComponent extends React.Component {
+                            render() {
+                                return <div onClick={this._handleClick}>Hello, world.</div>;
+                            }
+                            _handleClick() {
+                                console.log(this);
+                            }
+                        }
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Method instance binding
+
+                        ```
+                        // ES5
+                        class ExampleComponent extends React.Component {
+                            render() {
+                                return <div onClick={this._handleClick}>Hello, world.</div>;
+                            }
+                            _handleClick() {
+                                console.log(this); // this is undefined
+                            }
+                        }
+
+                        // ES6
+                        class ExampleComponent extends React.Component {
+                            constructor() {
+                                super();
+                                this. _handleClick = this. _handleClick.bind(this);
+                            }
+                            render() {
+                                return <div onClick={this._handleClick}>Hello, world.</div>;
+                            }
+                            _handleClick() {
+                                console.log(this); // this is an ExampleComponent
+                            }
+                        }
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        State initialization
+
+                        ```
+                        // ES5
+                        class ExampleComponent extends React.Component {
+                            getInitialState() {
+                                return Store.getState();
+                            }
+                            constructor() {
+                                super();
+                            }
+                            ...
+                        }
+
+                        // ES6
+                        class ExampleComponent extends React.Component {
+                            constructor() {
+                                super();
+                                this.state = Store.getState();
+                            }
+                            ...
+                        }
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
                     <h2>Flux (Alt)</h2>
                 </section>
 
@@ -598,7 +918,64 @@
 
                 <section>
                     <h2>React Router</h2>
-                    <p>React Router is a powerful routing library built on top of React that helps you add new screens and flows to your application, all while keeping the URL in sync with what's being displayed on the page. It has a simple API with features like lazy code loading, dynamic route matching, and location transition handling built right in.</p>
+                    <p>
+                        React Router is a powerful routing library built on top of React that helps you add new screens and flows to your application, all while keeping the URL in sync with what's being displayed on the page. It has a simple API with features like lazy code loading, dynamic route matching, and location transition handling built right in.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        React Router knows how to build nested UI for us, so we don't have to manually figure out what to render. Internally, the router converts the <Route> element hierarchy to a route config.
+
+                        ```
+                        // Defined route hierarchy...
+                        const routes = (
+                            <Route name="app" path="/" handler={App}>
+                                <DefaultRoute name="home" handler={Home} />
+
+                                <Route name="invoice" path="invoice">
+                                    <DefaultRoute handler={Invoice.List} />
+                                    <Route name="invoiceCreate" path="create" handler={Invoice.Create} />
+                                    <Route name="invoiceDetails" path=":id">
+                                        <DefaultRoute handler={Invoice.Details} />
+                                        <Route name="invoiceEdit" path="edit" handler={Invoice.Edit} />
+                                        <Route name="invoiceClone" path="clone" handler={Invoice.Clone} />
+                                    </Route>
+                                </Route>
+
+                                ...
+
+                                <NotFoundRoute handler={NotFound} />
+                            </Route>
+                        );
+
+                        // ...ran through the router on app start
+                        Router.run(routes, Router.HistoryLocation, (Root) => {
+                            React.render(<Root/>, container);
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Route components get some useful properties injected into them on render, like parameters from the dynamic segment of the path, or parameters from the query string.
+
+                        ```
+                        // Route example
+                        <Route name="invoice" path="invoice">
+                            <Route name="invoiceDetails" path=":id">
+                                <DefaultRoute handler={Invoice.Details} />
+                            </Route>
+                        </Route>
+
+                        // We can access those parameters in the Invoice.Details module now as props
+                        this.props.params.id;
+                        this.props.location.query.example;
+
+                        ```
+                    </script>
                 </section>
 
                 <section>
@@ -677,6 +1054,7 @@
                                 "Content-Type": "application/json"
                             },
                             body: JSON.stringify(objectWithData);
+                        });
 
                         ```
                     </script>
