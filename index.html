@@ -743,7 +743,7 @@
                         ```
                         // ES5
                         var ExampleComponent = React.createClass({
-                            propTypes: {
+                            propTypes: function() {
                                 aStringProp: React.PropTypes.string
                             },
                             getDefaultProps: function() {
@@ -752,7 +752,7 @@
                         });
 
                         // ES6
-                        var ExampleComponent = React.createClass({ ... });
+                        class ExampleComponent extends React.Component { ... }
                         // No props init in ES6 so we need to initialize all class properties
                         // outside of the scope of the class
                         ExampleComponent.propTypes = {
@@ -768,7 +768,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        Classes
+                        Classes and method instance binding
 
                         ```
                         // ES5
@@ -777,44 +777,15 @@
                                 return <div onClick={this._handleClick}>Hello, world.</div>;
                             },
                             _handleClick: function() {
-                                console.log(this);
+                                console.log(this); // this is undefined
                             }
                         });
 
                         // ES6
                         class ExampleComponent extends React.Component {
-                            render() {
-                                return <div onClick={this._handleClick}>Hello, world.</div>;
-                            }
-                            _handleClick() {
-                                console.log(this);
-                            }
-                        }
-
-                        ```
-                    </script>
-                </section>
-
-                <section data-markdown>
-                    <script type="text/template">
-                        Method instance binding
-
-                        ```
-                        // ES5
-                        class ExampleComponent extends React.Component {
-                            render() {
-                                return <div onClick={this._handleClick}>Hello, world.</div>;
-                            }
-                            _handleClick() {
-                                console.log(this); // this is undefined
-                            }
-                        }
-
-                        // ES6
-                        class ExampleComponent extends React.Component {
                             constructor() {
                                 super();
-                                this. _handleClick = this. _handleClick.bind(this);
+                                this._handleClick = this._handleClick.bind(this);
                             }
                             render() {
                                 return <div onClick={this._handleClick}>Hello, world.</div>;
@@ -834,15 +805,15 @@
 
                         ```
                         // ES5
-                        class ExampleComponent extends React.Component {
-                            getInitialState() {
+                        var ExampleComponent = React.createClass({
+                            getInitialState: function() {
                                 return Store.getState();
-                            }
-                            constructor() {
+                            },
+                            constructor: function() {
                                 super();
                             }
                             ...
-                        }
+                        });
 
                         // ES6
                         class ExampleComponent extends React.Component {
@@ -858,7 +829,152 @@
                 </section>
 
                 <section>
-                    <h2>Flux (Alt)</h2>
+                    <h2>Flux</h2>
+                </section>
+
+                <section>
+                    <h2>What is Flux?</h2>
+                    <p>
+                        Flux is an application architecture for building complex user interfaces. It uses unidirectional data flow, which means that data enters through a single place (actions) and then flow outward through their state manager (store) and finally onto the view. The view can then restart the flow by calling other actions in response to user input.
+                    </p>
+                </section>
+
+                <section>
+                    <p>Flux data flow</p>
+                    <img data-src="images/flux-diagram.png">
+                </section>
+
+                <section>
+                    <h2>Alt</h2>
+                    <p>
+                        Alt is a library that facilitates the managing of state within JavaScript applications. It is modeled after Flux and used in our application.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Setup
+
+                        ```
+                        var Alt = require('alt');
+                        var alt = new Alt();
+
+                        module.exports = alt;
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Actions - very important part of the Flux architecture, they carry data to Stores
+
+                        ```
+                        var alt = require('../alt');
+
+                        // Create an action by creating a class,
+                        class LocationActions {
+                            // Class methods will become our actions
+                            updateLocations(locations) {
+                                this.dispatch(locations);
+                            }
+                        }
+
+                        // Export actions using "createActions" method
+                        module.exports = alt.createActions(LocationActions);
+
+                        // The action can be then accessed
+                        LocationActions.updateLocations(location);
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Stores - as the name suggests they store our data.
+
+                        ```
+                        var alt = require('../alt');
+                        var LocationActions = require('../actions/LocationActions');
+
+                        class LocationStore {
+                            constructor() {
+                                // Variables defined in the store will become our state, we can
+                                // initialize them in the constructor and update in class methods
+                                this.locations = [];
+
+                                // Bind action handlers to actions
+                                this.bindListeners({
+                                    handleUpdateLocations: LocationActions.UPDATE_LOCATIONS
+                                });
+                                // Stores automatically emit a change event when an
+                                // action is dispatched through it and the action handler ends.
+                            }
+
+                            handleUpdateLocations(locations) {
+                                this.locations = locations;
+                            }
+                        }
+
+                        // Export store using "createStore" method
+                        module.exports = alt.createStore(LocationStore, 'LocationStore');
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Views - altough they are a React thing it's important to understand how views listen to store and get data out of them.
+
+                        ```
+                        var React = require('react');
+                        var LocationStore = require('../stores/LocationStore');
+
+                        var Locations = React.createClass({
+                            // Use React's "getInitialState" to set the initial component state using the store's state
+                            getInitialState() {
+                                return LocationStore.getState();
+                            },
+
+                            componentDidMount() {
+                                // We can now listen to state changes to update the store
+                                LocationStore.listen(this.onChange);
+                            },
+
+                            componentWillUnmount() {
+                                // To stop listening we use the "unlisten" method
+                                LocationStore.unlisten(this.onChange);
+                            },
+
+                            onChange(state) {
+                                this.setState(state);
+                            },
+
+                            render() {
+                                return (
+                                    <ul>
+                                        {this.state.locations.map((location) => {
+                                            return (
+                                                <li>{location.name}</li>
+                                            );
+                                        })}
+                                    </ul>
+                                );
+                            }
+                        });
+
+                        module.exports = Locations;
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <script>
+
+                    </script>
                 </section>
 
                 <section>
@@ -1006,25 +1122,26 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                    Reacts' solution for repetitive code is to write directly in Javascript.
+                        Reacts' solution for repetitive code is to write directly in Javascript. It wraps standard classes into a friendly "key: value" form, to reduce redundancy.
 
-                    ```
-                    // Bootstrap solution
-                    var button = React.DOM.button({
-                        className: "btn btn-lg btn-success",
-                        children: "Register"
-                    });
-                    React.render(button, mountNode);
+                        ```
+                        // Bootstrap solution
+                        var button = React.DOM.button({
+                            className: "btn btn-lg btn-success",
+                            children: "Register"
+                        });
+                        React.render(button, mountNode);
 
-                    // React bootstrap (in JS we can wrap the HTML/CSS and provide a cleaner solution)
-                    var button = ReactBootstrap.Button({
-                        bsStyle: "success",
-                        bsSize: "large",
-                        children: "Register"
-                    });
-                    React.render(button, mountNode);
+                        // React bootstrap (in JS we can wrap the HTML/CSS and provide a cleaner solution)
+                        // Also a great example of component reusability (no need to repeat classes on every button)
+                        var button = ReactBootstrap.Button({
+                            bsStyle: "success",
+                            bsSize: "large",
+                            children: "Register"
+                        });
+                        React.render(button, mountNode);
 
-                    ```
+                        ```
                     </script>
                 </section>
 
