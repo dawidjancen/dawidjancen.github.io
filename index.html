@@ -67,7 +67,6 @@
                         <li>React</li>
                         <li>Flux (Alt)</li>
                         <li>lodash, moment, react-router, react-bootstrap, whatwg-fetch</li>
-                        <li>Browser Sync</li>
                     </ul>
                 </section>
 
@@ -432,6 +431,42 @@
                                 }));
 
                                 callback();
+                            });
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Browser-sync - updates browser content on file change.
+
+                        ```
+                        // Launch BrowserSync development server
+                        let browsersync;
+
+                        gulp.task("sync", ["serve"], (callback) => {
+                            browserSync = require("browser-sync");
+
+                            browserSync({
+                                logPrefix: "BrowserSync",
+                                notify: false,
+                                // Run as an https by setting "https: true"
+                                https: false,
+                                // Informs browser-sync to proxy our
+                                // Express app which would run at the following location
+                                proxy: "localhost:5000",
+                                port: 12501,
+                                ui: false
+                            }, callback);
+
+                            process.on("exit", () => browserSync.exit());
+
+                            gulp.watch(["build/**/*.*"].concat(
+                                src.server.map((file) => "!" + file)
+                            ), (file) => {
+                                browserSync.reload(path.relative(__dirname, file.path));
                             });
                         });
 
@@ -845,6 +880,230 @@
                 </section>
 
                 <section>
+                    <h2>Individual concepts</h2>
+                    <ul>
+                        <li>Actions – Helper methods that facilitate passing data to the Dispatcher</li>
+                        <li>Dispatcher – Receives actions and broadcasts payloads to registered callbacks</li>
+                        <li>Stores – Containers for application state & logic that have callbacks registered to the dispatcher</li>
+                        <li>Controller Views – React Components that grab the state from Stores and pass it down via props to child components.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Dispatcher</h2>
+                    <p>
+                        It is the central hub for the application. The dispatcher receives actions and dispatches actions and data to registered callbacks. It includes functionality that allows us to invoke the callbacks in a specific order, even waiting for updates before proceeding.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Dispatcher example
+
+                        ```
+                        var Dispatcher = require('flux').Dispatcher;
+                        // We create one instance of our Dispatcher
+                        var AppDispatcher = new Dispatcher();
+
+                        // handleViewAction - an abstraction useful
+                        // for distinguishing between view and API actions,
+                        // this method calls the dispatch method, which will broadcast
+                        // the action payload to all of its registered callbacks
+                        AppDispatcher.handleViewAction = function(action) {
+                            this.dispatch({
+                                source: 'VIEW_ACTION',
+                                action: action
+                            });
+                        }
+
+                        module.exports = AppDispatcher;
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        waitFor -  we can call this method if one part of the application is dependent upon another being updated first.
+
+                        ```
+                        // To use the waitFor method we need to
+                        // store the return value of the Dispatcher’s
+                        // registration method on our store as dispatcherIndex
+                        ShoeStore.dispatcherIndex = AppDispatcher
+                            .register(function(payload) {});
+
+                        // Then in our store, when handling a dispatched action, we can
+                        // use the waitFor method to ensure store has been updated
+                        case 'BUY_SHOES':
+                            AppDispatcher.waitFor([
+                                ShoeStore.dispatcherIndex
+                            ], function() {
+                                CheckoutStore.purchaseShoes(ShoeStore.getSelectedShoes());
+                            });
+                            break;
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Stores</h2>
+                    <p>
+                        Stores manage application state for a particular domain within the app, they manage the data, data retrieval methods and dispatcher callbacks.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Extending our store with NodeJS’s EventEmitter allows our stores to listen/broadcast events. This allows our components to update based upon those events.
+
+                        ```
+                        var AppDispatcher = require('../dispatcher/AppDispatcher');
+                        var ShoeConstants = require('../constants/ShoeConstants');
+                        var EventEmitter = require('events').EventEmitter;
+                        var merge = require('react/lib/merge');
+
+                        // Internal object of shoes
+                        var _shoes = {};
+
+                        // Method to load shoes from action data
+                        function loadShoes(data) {
+                            _shoes = data.shoes;
+                        }
+
+                        // Merge our store with Node's Event Emitter
+                        var ShoeStore = merge(EventEmitter.prototype, {
+                            // Returns all shoes
+                            getShoes: function() {
+                                return _shoes;
+                            },
+                            emitChange: function() {
+                                this.emit('change');
+                            },
+                            addChangeListener: function(callback) {
+                                this.on('change', callback);
+                            },
+                            removeChangeListener: function(callback) {
+                                this.removeListener('change', callback);
+                            }
+                        });
+                        ...
+
+                        ```
+                    </script>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Registering a callback with the AppDispatcher allows the store to listen to broadcasts. If a relevant action is taken, a change event is emitted, and views that are listening for this event update their states.
+
+                        ```
+                        ...
+                        // Register dispatcher callback
+                        AppDispatcher.register(function(payload) {
+                            var action = payload.action;
+                            var text;
+                            // Define what to do for certain actions
+                            switch(action.actionType) {
+                                case ShoeConstants.LOAD_SHOES:
+                                    // Call internal method based upon dispatched action
+                                    loadShoes(action.data);
+                                    break;
+
+                                default:
+                                    return true;
+                            }
+                            // If action was acted upon, emit change event
+                            ShoeStore.emitChange();
+                            return true;
+                        });
+
+                        module.exports = ShoeStore;
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Action creators</h2>
+                    <p>
+                        Action Creators are collections of methods that are called to send actions to the dispatcher. Actions are the actual payloads that are delivered via the dispatcher. Inside of registered callbacks, actions can be handled according to their action type, and methods can be called with action data as the arguments.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        Calling ShoeStoreActions.loadShoes(ourData) will send our payload to the dispatcher, which will broadcast it. The store will “hear” that event and call a method that load shoes.
+
+                        ```
+                        var AppDispatcher = require('../dispatcher/AppDispatcher');
+                        var ShoeStoreConstants = require('../constants/ShoeStoreConstants');
+
+                        var ShoeStoreActions = {
+                            loadShoes: function(data) {
+                                AppDispatcher.handleAction({
+                                    actionType: ShoeStoreConstants.LOAD_SHOES,
+                                    data: data
+                                });
+                            }
+                        };
+
+                        module.exports = ShoeStoreActions;
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
+                    <h2>Views</h2>
+                    <p>
+                        Views are just React components that listen to change events and retrieve state from stores. They then pass that data down to their child components via props.
+                    </p>
+                </section>
+
+                <section data-markdown>
+                    <script type="text/template">
+                        View example
+
+                        ```
+                        // Method to retrieve application state from store
+                        function getAppState() {
+                            return {
+                                shoes: ShoeStore.getShoes()
+                            };
+                        }
+
+                        // Create our component class
+                        var ShoeStoreApp = React.createClass({
+                            // Use getAppState method to set initial state
+                            getInitialState: function() {
+                                return getAppState();
+                            },
+                            // Listen for changes
+                            componentDidMount: function() {
+                                ShoeStore.addChangeListener(this._onChange);
+                            },
+                            // Unbind change listener
+                            componentWillUnmount: function() {
+                                ShoesStore.removeChangeListener(this._onChange);
+                            },
+                            render: function() {
+                                return (
+                                    <ShoeStore shoes={this.state.shoes} />
+                                );
+                            },
+                            // Update view state when change event is received
+                            _onChange: function() {
+                                this.setState(getAppState());
+                            }
+                        });
+
+                        ```
+                    </script>
+                </section>
+
+                <section>
                     <h2>Alt</h2>
                     <p>
                         Alt is a library that facilitates the managing of state within JavaScript applications. It is modeled after Flux and used in our application.
@@ -867,7 +1126,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        Actions - very important part of the Flux architecture, they carry data to Stores
+                        Alt's actions
 
                         ```
                         var alt = require('../alt');
@@ -892,7 +1151,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        Stores - as the name suggests they store our data.
+                        Alt's stores
 
                         ```
                         var alt = require('../alt');
@@ -926,7 +1185,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        Views - altough they are a React thing it's important to understand how views listen to store and get data out of them.
+                        Alt's views
 
                         ```
                         var React = require('react');
@@ -968,12 +1227,6 @@
                         module.exports = Locations;
 
                         ```
-                    </script>
-                </section>
-
-                <section>
-                    <script>
-
                     </script>
                 </section>
 
@@ -1175,6 +1428,10 @@
 
                         ```
                     </script>
+                </section>
+
+                <section>
+                    <h2>The end</h2>
                 </section>
 
 			</div>
