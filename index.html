@@ -41,12 +41,19 @@
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section>
-					<h1>Invoice App</h1>
-					<h3>Technologies used</h3>
+					<h1>Modern JS Development</h1>
+					<h3>case study of Invoice App</h3>
 					<p>
 						<small>Dawid Jancen / <a href="mailto:dawid.jancen@sidnet.info">dawid.jancen@sidnet.info</a></small>
 					</p>
 				</section>
+
+                <section>
+                    <h2>Introduction</h2>
+                    <p>
+                        Technologies used in creation of our Invoice App will be the main focus of this presentation.
+                    </p>
+                </section>
 
 				<section>
 					<h2>Invoice App</h2>
@@ -132,7 +139,7 @@
                 <section data-markdown>
                     <script type="text/template">
                         ## Modules
-                        ES6 gives us the ability to import/export symbols without global namespace polution.
+                        ES6 gives us the ability to import/export modules without global namespace polution.
 
                         ```
                         import React from "react";
@@ -151,7 +158,6 @@
                                 );
                             }
                         };
-
                         export default Section;
 
                         ```
@@ -605,7 +611,7 @@
                         React focuses only on the UI, making no assumptions on the rest of the application. Can be viewed as a "V" in a "MVC" model. It is all about building reusable components, which makes the code easy to reuse, test, and separates the concerns.
                     </p>
                     <p>
-                        It also implements a one-directional reactive data flow that reduces the boilerplate and is easier to reason about.
+                        It also promotes a one-directional reactive data flow that reduces the boilerplate and is easier to reason about.
                     </p>
                 </section>
 
@@ -710,7 +716,7 @@
 
                 <section data-markdown>
                     <script type="text/template">
-                        If performance is a bottleneck, especially with dozens or hundreds of components, we can use "shouldComponentUpdate" method to speed up our app. It allows us to add optimization hints to React's diff algorithm, for specific components. If it returns false, then render() will be completely skipped until the next state change.
+                        If performance is a bottleneck, especially with dozens or hundreds of components, we can use "shouldComponentUpdate" method to speed up our app. It allows us to add optimization hints to React's diff algorithm, for specific components. If it returns false, then render() will be completely skipped until the next state change. This also skips calling the render() method of all nested components.
 
                         ```
                         shouldComponentUpdate: function(nextProps, nextState) {
@@ -724,7 +730,7 @@
                 <section>
                     <h2>Reusable components</h2>
                     <p>
-                        Because React is component based it's a great idea to break down the common design elements (buttons, form fields, layout components) into reusable components with well-defined interface. We can then reuse them in future projects, saving some time in the process.
+                        Because React is component based it's a great idea to break down the common design elements (buttons, form fields, layout components) into reusable components with well-defined interface. We can then reuse them in future projects, saving some time in the process. An example of this will be shown later in the React-bootstrap section.
                     </p>
                 </section>
 
@@ -870,7 +876,7 @@
                 <section>
                     <h2>What is Flux?</h2>
                     <p>
-                        Flux is an application architecture for building complex user interfaces. It uses unidirectional data flow, which means that data enters through a single place (actions) and then flow outward through their state manager (store) and finally onto the view. The view can then restart the flow by calling other actions in response to user input.
+                        Flux is an application architecture for building complex user interfaces. It enforces unidirectional data flow, which means that data enters through a single place (actions) and then flow outward through their state manager (store) and finally onto the view. The view can then restart the flow by calling other actions in response to user input. In the examples we'll be using React for our Views, altough it's not mandatory.
                     </p>
                 </section>
 
@@ -1142,8 +1148,8 @@
                         // Export actions using "createActions" method
                         module.exports = alt.createActions(LocationActions);
 
-                        // The action can be then accessed
-                        LocationActions.updateLocations(location);
+                        // The action can be then accessed in another file
+                        NewLocationActions.updateLocations(location);
 
                         ```
                     </script>
@@ -1157,7 +1163,7 @@
                         var alt = require('../alt');
                         var LocationActions = require('../actions/LocationActions');
 
-                        class LocationStore {
+                        class LocationStoreBlueprint {
                             constructor() {
                                 // Variables defined in the store will become our state, we can
                                 // initialize them in the constructor and update in class methods
@@ -1177,7 +1183,7 @@
                         }
 
                         // Export store using "createStore" method
-                        module.exports = alt.createStore(LocationStore, 'LocationStore');
+                        module.exports = alt.createStore(LocationStoreBlueprint, 'LocationStore');
 
                         ```
                     </script>
@@ -1401,7 +1407,7 @@
                 <section>
                     <h2>whatwg-fetch</h2>
                     <p>
-                        This module provides a global fetch function as an easier way to make web requests and handle responses than using an XMLHttpRequest.
+                        This polyfill provides a global fetch function as an easier way to make web requests and handle responses than using an XMLHttpRequest.
                     </p>
                 </section>
 
